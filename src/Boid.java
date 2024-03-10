@@ -124,6 +124,7 @@ public class Boid {
 
         position.x += velocity.x;
         position.y += velocity.y;
+        updateVelocity();
 
 
     }
