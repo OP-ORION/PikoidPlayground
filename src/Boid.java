@@ -40,12 +40,7 @@ public class Boid {
         color = c;
     }
 
-
-    public void update() {
-
-        position.x += velocity.x;
-        position.y += velocity.y;
-
+    public void updateVelocity(){
         Point avgPos = new Point();
         Point avgWeightedPos = new Point();
         Point avgWeightedPosOfOppositeColor = new Point();
@@ -110,18 +105,25 @@ public class Boid {
 
             //cohesion
             if (position.distance(avgPos) > COHESION_RANGE) {
-                velocity.x += (int) ((-position.x + avgPos.x) * COHESION_FORCE);
-                velocity.y += (int) ((-position.y + avgPos.y) * COHESION_FORCE);
+                velocity.x +=  ((-position.x + avgPos.x) * COHESION_FORCE);
+                velocity.y += ((-position.y + avgPos.y) * COHESION_FORCE);
             }
 
             //alignment
-            velocity.x += (int) ((-velocity.x + avgVelocity.x) * ALIGNMENT_FORCE);
-            velocity.y += (int) ((-velocity.y + avgVelocity.y) * ALIGNMENT_FORCE);
+            velocity.x +=  ((-velocity.x + avgVelocity.x) * ALIGNMENT_FORCE);
+            velocity.y +=  ((-velocity.y + avgVelocity.y) * ALIGNMENT_FORCE);
         }
 
         Target(); // move towards target if in range
         AvoidWall();
         fixSpeed();
+
+    }
+
+    public void update() {
+
+        position.x += velocity.x;
+        position.y += velocity.y;
 
 
     }

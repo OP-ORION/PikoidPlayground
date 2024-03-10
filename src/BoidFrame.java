@@ -33,10 +33,30 @@ public class BoidFrame extends JFrame{
 
     }
 
+    private void drawBoid(Boid boid,Graphics g){
+        g.setColor(boid.color);
+
+        // Calculate direction angle
+        double angle = Math.atan2(boid.velocity.y, boid.velocity.x);
+
+        // Calculate the three vertices of the triangle
+        int[] xPoints = {
+                (int) (boid.position.x + Math.cos(angle) * BoidDrawSize),
+                (int) (boid.position.x + Math.cos(angle + Math.PI * 3 / 4) * BoidDrawSize),
+                (int) (boid.position.x + Math.cos(angle - Math.PI * 3 / 4) * BoidDrawSize)
+        };
+        int[] yPoints = {
+                (int) (boid.position.y + Math.sin(angle) * BoidDrawSize),
+                (int) (boid.position.y + Math.sin(angle + Math.PI * 3 / 4) * BoidDrawSize),
+                (int) (boid.position.y + Math.sin(angle - Math.PI * 3 / 4) * BoidDrawSize)
+        };
+
+        g.fillPolygon(xPoints, yPoints, 3);
+    }
+
     private void initComponents() {
 
         JPanel panel = new JPanel(){
-
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -47,26 +67,11 @@ public class BoidFrame extends JFrame{
                 if (mousePos != null) {
                     g.drawOval((int) (mousePos.x - Boid.TARGET_MAX_RANGE / 2), (int) (mousePos.y - Boid.TARGET_MAX_RANGE / 2), (int) Boid.TARGET_MAX_RANGE, (int) Boid.TARGET_MAX_RANGE);
                 }
+
                 for (Boid boid : boids) {
-                    g.setColor(boid.color);
-
-                    // Calculate direction angle
-                    double angle = Math.atan2(boid.velocity.y, boid.velocity.x);
-
-                    // Calculate the three vertices of the triangle
-                    int[] xPoints = {
-                            (int) (boid.position.x + Math.cos(angle) * BoidDrawSize),
-                            (int) (boid.position.x + Math.cos(angle + Math.PI * 3/4) * BoidDrawSize),
-                            (int) (boid.position.x + Math.cos(angle - Math.PI * 3/4) * BoidDrawSize)
-                    };
-                    int[] yPoints = {
-                            (int) (boid.position.y + Math.sin(angle) * BoidDrawSize),
-                            (int) (boid.position.y + Math.sin(angle + Math.PI * 3/4) * BoidDrawSize),
-                            (int) (boid.position.y + Math.sin(angle - Math.PI * 3/4) * BoidDrawSize)
-                    };
-
-                    g.fillPolygon(xPoints, yPoints, 3);
+                    drawBoid( boid, g);
                 }
+
             }
 
         };
