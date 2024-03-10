@@ -78,10 +78,5 @@ public class BoidFrame extends JFrame{
             }
         }).start();
 
-        //add mouse stuff
-        MouseListener mouseListener = new MouseListener();
-        addMouseListener(mouseListener);
-        addMouseMotionListener(mouseListener);
-
     }
 }
