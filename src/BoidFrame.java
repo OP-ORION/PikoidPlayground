@@ -22,10 +22,10 @@ public class BoidFrame extends JFrame{
         setVisible(true);
 
         for (int count = 0; count < c/4; count++){
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new Point((int) (Math.random()*20-10), (int) (Math.random()*20-10)),Color.red));
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new Point((int) (Math.random()*20-10), (int) (Math.random()*20-10)),Color.blue));
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new Point((int) (Math.random()*20-10), (int) (Math.random()*20-10)),Color.green));
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new Point((int) (Math.random()*20-10), (int) (Math.random()*20-10)),Color.yellow));
+            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint((Math.random()*20-10), (Math.random()*20-10)),Color.red));
+            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.blue));
+            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.green));
+            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.yellow));
         }
 
 
@@ -44,13 +44,28 @@ public class BoidFrame extends JFrame{
                 g.setColor(Color.BLACK);
                 Point mousePos = getMousePosition();
                 Boid.target = mousePos;
-                if (mousePos != null){
-                    g.drawOval( (int)(mousePos.x-Boid.TARGET_MAX_RANGE/2), (int)(mousePos.y-Boid.TARGET_MAX_RANGE/2), (int)Boid.TARGET_MAX_RANGE, (int) Boid.TARGET_MAX_RANGE);
+                if (mousePos != null) {
+                    g.drawOval((int) (mousePos.x - Boid.TARGET_MAX_RANGE / 2), (int) (mousePos.y - Boid.TARGET_MAX_RANGE / 2), (int) Boid.TARGET_MAX_RANGE, (int) Boid.TARGET_MAX_RANGE);
                 }
                 for (Boid boid : boids) {
                     g.setColor(boid.color);
-                    g.fillOval(boid.position.x-BoidDrawSize/2, boid.position.y-BoidDrawSize/2,BoidDrawSize,BoidDrawSize);
-                    g.drawLine(boid.position.x,boid.position.y, boid.position.x + boid.velocity.x,boid.position.y + boid.velocity.y);
+
+                    // Calculate direction angle
+                    double angle = Math.atan2(boid.velocity.y, boid.velocity.x);
+
+                    // Calculate the three vertices of the triangle
+                    int[] xPoints = {
+                            (int) (boid.position.x + Math.cos(angle) * BoidDrawSize),
+                            (int) (boid.position.x + Math.cos(angle + Math.PI * 3/4) * BoidDrawSize),
+                            (int) (boid.position.x + Math.cos(angle - Math.PI * 3/4) * BoidDrawSize)
+                    };
+                    int[] yPoints = {
+                            (int) (boid.position.y + Math.sin(angle) * BoidDrawSize),
+                            (int) (boid.position.y + Math.sin(angle + Math.PI * 3/4) * BoidDrawSize),
+                            (int) (boid.position.y + Math.sin(angle - Math.PI * 3/4) * BoidDrawSize)
+                    };
+
+                    g.fillPolygon(xPoints, yPoints, 3);
                 }
             }
 

@@ -23,18 +23,18 @@ public class Boid {
     static Point target = new Point();
     Color color;
     Point position;
-    Point velocity;
+    DoublePoint velocity;
     public Boid() {
         position = new Point();
-        velocity = new Point();
+        velocity = new DoublePoint();
     }
 
-    public Boid(Point p, Point v) {
+    public Boid(Point p, DoublePoint v) {
         position = p;
         velocity = v;
         color = Color.blue;
     }
-    public Boid(Point p, Point v,Color c) {
+    public Boid(Point p, DoublePoint v,Color c) {
         position = p;
         velocity = v;
         color = c;
@@ -49,7 +49,7 @@ public class Boid {
         Point avgPos = new Point();
         Point avgWeightedPos = new Point();
         Point avgWeightedPosOfOppositeColor = new Point();
-        Point avgVelocity = new Point();
+        DoublePoint avgVelocity = new DoublePoint();
         int surroundingBoids = 0;
 
         for (int i = 0; i < BoidFrame.boids.size();i++) {
