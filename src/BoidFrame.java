@@ -6,7 +6,9 @@ import java.util.ArrayList;
 
 public class BoidFrame extends JFrame{
 
-    public static final int BoidDrawSize = 8;
+    public static final int BOID_DRAW_SIZE = 8;
+    public static final int BOID_SPEED_COMPRESSION_CHANGE = 25;
+    public static final int BOID_SPEED_LENGTH_CHANGE = 2;
     public static ArrayList<Boid> boids = new ArrayList<Boid>();
     static BoidFrame singleton;
 
@@ -38,17 +40,18 @@ public class BoidFrame extends JFrame{
 
         // Calculate direction angle
         double angle = Math.atan2(boid.velocity.y, boid.velocity.x);
+        double speed = Math.sqrt((boid.velocity.x*boid.velocity.x) + (boid.velocity.y*boid.velocity.y))/ BOID_SPEED_COMPRESSION_CHANGE;
 
         // Calculate the three vertices of the triangle
         int[] xPoints = {
-                (int) (boid.position.x + Math.cos(angle) * BoidDrawSize),
-                (int) (boid.position.x + Math.cos(angle + Math.PI * 3 / 4) * BoidDrawSize),
-                (int) (boid.position.x + Math.cos(angle - Math.PI * 3 / 4) * BoidDrawSize)
+                (int) (boid.position.x + (Math.cos(angle) * BOID_DRAW_SIZE)*speed*BOID_SPEED_LENGTH_CHANGE),
+                (int) (boid.position.x + (Math.cos(angle + Math.PI * 3 / 4) * BOID_DRAW_SIZE)/speed),
+                (int) (boid.position.x + (Math.cos(angle - Math.PI * 3 / 4) * BOID_DRAW_SIZE)/speed)
         };
         int[] yPoints = {
-                (int) (boid.position.y + Math.sin(angle) * BoidDrawSize),
-                (int) (boid.position.y + Math.sin(angle + Math.PI * 3 / 4) * BoidDrawSize),
-                (int) (boid.position.y + Math.sin(angle - Math.PI * 3 / 4) * BoidDrawSize)
+                (int) (boid.position.y + (Math.sin(angle) * BOID_DRAW_SIZE)*speed*BOID_SPEED_LENGTH_CHANGE),
+                (int) (boid.position.y + (Math.sin(angle + Math.PI * 3 / 4) * BOID_DRAW_SIZE)/speed),
+                (int) (boid.position.y + (Math.sin(angle - Math.PI * 3 / 4) * BOID_DRAW_SIZE)/speed)
         };
 
         g.fillPolygon(xPoints, yPoints, 3);
