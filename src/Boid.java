@@ -24,6 +24,7 @@ public class Boid {
     Color color;
     Point position;
     DoublePoint velocity;
+    DoublePoint desiredVelocityChange = new DoublePoint();
     public Boid() {
         position = new Point();
         velocity = new DoublePoint();
@@ -46,6 +47,8 @@ public class Boid {
         Point avgWeightedPosOfOppositeColor = new Point();
         DoublePoint avgVelocity = new DoublePoint();
         int surroundingBoids = 0;
+        desiredVelocityChange.x = 0;
+        desiredVelocityChange.y = 0;
 
         for (int i = 0; i < BoidFrame.boids.size();i++) {
             Boid checkBoid = BoidFrame.boids.get(i);
@@ -85,17 +88,19 @@ public class Boid {
             }
         }
 
+
+
         // drag
-        velocity.x /= DRAG;
-        velocity.y /= DRAG;
+        desiredVelocityChange.x /= DRAG;
+        desiredVelocityChange.y /= DRAG;
 
         // Separation
-        velocity.x += avgWeightedPos.x;
-        velocity.y += avgWeightedPos.y;
+        desiredVelocityChange.x += avgWeightedPos.x;
+        desiredVelocityChange.y += avgWeightedPos.y;
 
         // Color Separation
-        velocity.x += avgWeightedPosOfOppositeColor.x;
-        velocity.y += avgWeightedPosOfOppositeColor.y;
+        desiredVelocityChange.x += avgWeightedPosOfOppositeColor.x;
+        desiredVelocityChange.y += avgWeightedPosOfOppositeColor.y;
 
         if (surroundingBoids != 0) {
             avgVelocity.x /= surroundingBoids;
@@ -105,38 +110,33 @@ public class Boid {
 
             //cohesion
             if (position.distance(avgPos) > COHESION_RANGE) {
-                velocity.x +=  ((-position.x + avgPos.x) * COHESION_FORCE);
-                velocity.y += ((-position.y + avgPos.y) * COHESION_FORCE);
+                desiredVelocityChange.x +=  ((-position.x + avgPos.x) * COHESION_FORCE);
+                desiredVelocityChange.y += ((-position.y + avgPos.y) * COHESION_FORCE);
             }
 
             //alignment
-            velocity.x +=  ((-velocity.x + avgVelocity.x) * ALIGNMENT_FORCE);
-            velocity.y +=  ((-velocity.y + avgVelocity.y) * ALIGNMENT_FORCE);
+            desiredVelocityChange.x +=  ((-velocity.x + avgVelocity.x) * ALIGNMENT_FORCE);
+            desiredVelocityChange.y +=  ((-velocity.y + avgVelocity.y) * ALIGNMENT_FORCE);
         }
+
+        velocity = DoublePoint.lerp(velocity, new DoublePoint(velocity.x + desiredVelocityChange.x, velocity.y + desiredVelocityChange.y), 0.75);
 
         Target(); // move towards target if in range
         AvoidWall();
         fixSpeed();
-
     }
 
     public void update() {
-
         position.x += velocity.x;
         position.y += velocity.y;
         updateVelocity();
-
-
     }
-    public void fixSpeed(){
-        double magnitude = Math.sqrt((velocity.x*velocity.x) + (velocity.y*velocity.y));
-        if (magnitude < MIN_SPEED){
-            velocity.x *= (1- (magnitude-MIN_SPEED)/magnitude);
-            velocity.y *= (1- (magnitude-MIN_SPEED)/magnitude);
-        }
-        if (magnitude > MAX_SPEED){
-            velocity.x *= (1- (magnitude-MAX_SPEED)/magnitude);
-            velocity.y *= (1- (magnitude-MAX_SPEED)/magnitude);
+    public void fixSpeed() {
+        double magnitude = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
+        if (magnitude < MIN_SPEED || magnitude > MAX_SPEED) {
+            double scale = magnitude < MIN_SPEED ? MIN_SPEED / magnitude : MAX_SPEED / magnitude;
+            velocity.x *= scale;
+            velocity.y *= scale;
         }
     }
 

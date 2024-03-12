@@ -21,9 +21,9 @@ public class DoublePoint {
         return Math.sqrt(((this.x - other.x) * (this.x - other.x)) * ((this.y - other.y) * (this.y - other.y)));
     }
 
-    public static DoublePoint lerp(DoublePoint a, DoublePoint b, double t) {
-        return new DoublePoint(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t);
+    public static DoublePoint lerp(DoublePoint start, DoublePoint end, double t) {
+        double x = start.x + (end.x - start.x) * t;
+        double y = start.y + (end.y - start.y) * t;
+        return new DoublePoint(x, y);
     }
-
-
 }
