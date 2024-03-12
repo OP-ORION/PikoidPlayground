@@ -55,6 +55,8 @@ public class BoidFrame extends JFrame{
         };
 
         g.fillPolygon(xPoints, yPoints, 3);
+        g.setColor(Color.black);
+        g.drawPolygon(xPoints, yPoints, 3);
     }
 
     private void initComponents() {
