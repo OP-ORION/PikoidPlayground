@@ -31,10 +31,10 @@ public class BoidFrame extends JFrame{
         setVisible(true);
 
         for (int count = 0; count < c/4; count++){
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint((Math.random()*20-10), (Math.random()*20-10)),Color.red));
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.blue));
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.green));
-            boids.add(new Boid(new Point((int) (Math.random()*w ), (int) (Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.yellow));
+            boids.add(new Boid(new DoublePoint( (Math.random()*w ),(Math.random()*h)),new DoublePoint((Math.random()*20-10), (Math.random()*20-10)),Color.red));
+            boids.add(new Boid(new DoublePoint( (Math.random()*w ),(Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.blue));
+            boids.add(new Boid(new DoublePoint( (Math.random()*w ),(Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.green));
+            boids.add(new Boid(new DoublePoint( (Math.random()*w ),(Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.yellow));
         }
 
 
