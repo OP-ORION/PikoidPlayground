@@ -7,7 +7,7 @@ public class Boid {
     DoublePoint position;
     DoublePoint velocity;
     boolean markedForRemoval = false;
-    DoublePoint desiredVelocityChange = new DoublePoint();
+
     public Boid() {
         position = new DoublePoint();
         velocity = new DoublePoint();
@@ -18,23 +18,25 @@ public class Boid {
         velocity = v;
         color = Color.blue;
     }
-    public Boid(DoublePoint p, DoublePoint v,Color c) {
+
+    public Boid(DoublePoint p, DoublePoint v, Color c) {
         position = p;
         velocity = v;
         color = c;
     }
 
-    public void updateVelocity(Grid grid){
+    public DoublePoint interactWithOtherBoidsChangeNeeded(Grid grid){
+        DoublePoint desiredVelocityChange = new DoublePoint();
+        // stats to be updated
         DoublePoint avgPos = new DoublePoint();
         DoublePoint avgVelocity = new DoublePoint();
         int boidsInViewRangeAndFriendly = 0;
-        desiredVelocityChange.x = 0;
-        desiredVelocityChange.y = 0;
 
+        // update stats
         List<Boid> localBoids = grid.getNeighbors(this, BoidSettings.VIEW_RANGE);
 
         for (Boid checkBoid : localBoids) {
-            if (checkBoid == this) {continue;} // ignore if same boid
+            if (checkBoid == this) {continue;} // ignore if checking self
 
             boolean difColor = !this.color.equals(checkBoid.color);
             double xDif = (position.x - checkBoid.position.x);
@@ -42,19 +44,19 @@ public class Boid {
             double distance = Math.sqrt((xDif * xDif) + ((yDif * yDif)));
             double relativeSpeed = this.velocity.distance(checkBoid.velocity);
 
-            if (relativeSpeed > BoidSettings.BATTLE_SPEED_MIN && distance < BoidSettings.BATTLE_RANGE && difColor) {
+            if (difColor && relativeSpeed > BoidSettings.BATTLE_SPEED_MIN && distance < BoidSettings.BATTLE_RANGE) {
                 checkBoid.markedForRemoval = true;
                 this.markedForRemoval = true;
-                return;
+                return desiredVelocityChange;
             }
             if (distance <= BoidSettings.SEPARATION_RANGE) {
                 // Separation
-                desiredVelocityChange.translate((xDif* BoidSettings.SEPARATION_FORCE),(yDif* BoidSettings.SEPARATION_FORCE));
+                desiredVelocityChange.translate((xDif * BoidSettings.SEPARATION_FORCE), (yDif * BoidSettings.SEPARATION_FORCE));
             } else if (distance <= BoidSettings.VIEW_RANGE) {
-                if (difColor){
+                if (difColor) {
                     // Color Separation
-                    desiredVelocityChange.translate((xDif* BoidSettings.DIF_COLOR_SEP_FORCE),(yDif* BoidSettings.DIF_COLOR_SEP_FORCE));
-                }else {
+                    desiredVelocityChange.translate((xDif * BoidSettings.DIF_COLOR_SEP_FORCE), (yDif * BoidSettings.DIF_COLOR_SEP_FORCE));
+                } else {
                     // cohesion and alignment helper
                     boidsInViewRangeAndFriendly++;
                     avgPos.translate(checkBoid.position.x, checkBoid.position.y);
@@ -71,17 +73,27 @@ public class Boid {
 
             //cohesion
             if (position.distance(avgPos) > BoidSettings.COHESION_RANGE) {
-                desiredVelocityChange.x +=  ((-position.x + avgPos.x) * BoidSettings.COHESION_FORCE);
+                desiredVelocityChange.x += ((-position.x + avgPos.x) * BoidSettings.COHESION_FORCE);
                 desiredVelocityChange.y += ((-position.y + avgPos.y) * BoidSettings.COHESION_FORCE);
             }
 
             //alignment
-            desiredVelocityChange.x +=  ((-velocity.x + avgVelocity.x) * BoidSettings.ALIGNMENT_FORCE);
-            desiredVelocityChange.y +=  ((-velocity.y + avgVelocity.y) * BoidSettings.ALIGNMENT_FORCE);
+            desiredVelocityChange.x += ((-velocity.x + avgVelocity.x) * BoidSettings.ALIGNMENT_FORCE);
+            desiredVelocityChange.y += ((-velocity.y + avgVelocity.y) * BoidSettings.ALIGNMENT_FORCE);
         }
+        return desiredVelocityChange;
+    }
 
-        Target(); // move towards target if in range
-        AvoidWall();
+    public void updateVelocity(Grid grid) {
+        DoublePoint desiredVelocityChange = new DoublePoint();
+
+
+        DoublePoint interactWithOtherBoids = interactWithOtherBoidsChangeNeeded(grid);
+        DoublePoint Target = targetChangeNeeded(); // move towards target if in range
+        DoublePoint avoidWall = AvoidWallChangeNeeded();
+
+        desiredVelocityChange.x += Target.x + avoidWall.x + interactWithOtherBoids.x;
+        desiredVelocityChange.y += Target.y + avoidWall.y + interactWithOtherBoids.y;
 
         velocity = DoublePoint.lerp(velocity, new DoublePoint(velocity.x + desiredVelocityChange.x, velocity.y + desiredVelocityChange.y), 0.75);
 
@@ -96,6 +108,7 @@ public class Boid {
         position.y += velocity.y;
         updateVelocity(grid);
     }
+
     public void fixSpeed() {
         double magnitude = Math.sqrt((velocity.x * velocity.x) + (velocity.y * velocity.y));
         if (magnitude < BoidSettings.MIN_SPEED || magnitude > BoidSettings.MAX_SPEED) {
@@ -105,15 +118,18 @@ public class Boid {
         }
     }
 
-    public void Target(){
+    public DoublePoint targetChangeNeeded() {
+        DoublePoint desiredVelocityChange = new DoublePoint();
         if (target != null && position.distance(target) < BoidSettings.TARGET_MAX_RANGE && position.distance(target) > BoidSettings.TARGET_MIN_RANGE) { // check if close enough to target to move towards
             // Targeting
-            desiredVelocityChange.x +=  ((-position.x + target.x) * BoidSettings.TARGET_FORCE);
-            desiredVelocityChange.y +=  ((-position.y + target.y) * BoidSettings.TARGET_FORCE);
+            desiredVelocityChange.x += ((-position.x + target.x) * BoidSettings.TARGET_FORCE);
+            desiredVelocityChange.y += ((-position.y + target.y) * BoidSettings.TARGET_FORCE);
         }
+        return desiredVelocityChange;
     }
 
-    public void AvoidWall(){
+    public DoublePoint AvoidWallChangeNeeded() {
+        DoublePoint desiredVelocityChange = new DoublePoint();
         if (position.x < BoidSettings.BORDER_MARGIN) {
             velocity.x += BoidSettings.TURN_FACTOR;
         }
@@ -126,7 +142,7 @@ public class Boid {
         if (position.y > (BoidFrame.singleton.getHeight()) - BoidSettings.BORDER_MARGIN) {
             velocity.y -= BoidSettings.TURN_FACTOR;
         }
+        return desiredVelocityChange;
     }
-
 
 }

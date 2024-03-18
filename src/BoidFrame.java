@@ -1,5 +1,4 @@
 import javax.swing.*;
-import javax.swing.plaf.ColorUIResource;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,7 +35,6 @@ public class BoidFrame extends JFrame{
             boids.add(new Boid(new DoublePoint( (Math.random()*w ),(Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.green));
             boids.add(new Boid(new DoublePoint( (Math.random()*w ),(Math.random()*h)),new DoublePoint( (Math.random()*20-10), (Math.random()*20-10)),Color.yellow));
         }
-
 
         initComponents();
 
@@ -112,7 +110,6 @@ public class BoidFrame extends JFrame{
                         }
                     }
                 }
-
 
                 if (mousePos != null) {
                     g.setColor(Color.GREEN);
