@@ -3,12 +3,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Grid {
-    private final List<Boid>[][] cells;
+    private List<Boid>[][] cells;
     public final double cellSize;
-    private final int width;
-    private final int height;
+    private int width;
+    private int height;
 
-    @SuppressWarnings("unchecked")
+
     public Grid(int width, int height, double cellSize) {
         this.cellSize = cellSize;
         this.width = (int)Math.ceil(width / cellSize);
@@ -34,6 +34,18 @@ public class Grid {
         int cellY = (int)(boid.position.y / cellSize);
         if(cellX >= 0 && cellX < width && cellY >= 0 && cellY < height) {
             cells[cellX][cellY].add(boid);
+        }
+    }
+
+    public void changeDimension(int width, int height){// CAALLING THIS RESETS GRID BOIDS
+        this.width = (int)Math.ceil(width / cellSize);
+        this.height = (int)Math.ceil(height / cellSize);
+        // re make grid (THIS EMPTIES THE GRID)
+        cells = (List<Boid>[][]) new List[this.width][this.height];
+        for (int i = 0; i < this.width; i++) {
+            for (int j = 0; j < this.height; j++) {
+                cells[i][j] = new LinkedList<>();
+            }
         }
     }
 

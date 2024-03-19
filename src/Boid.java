@@ -6,84 +6,15 @@ public class Boid {
     Color color;
     DoublePoint position;
     DoublePoint velocity;
+    BoidSettings settings;
     boolean markedForRemoval = false;
 
-    public Boid() {
-        position = new DoublePoint();
-        velocity = new DoublePoint();
-    }
-
-    public Boid(DoublePoint p, DoublePoint v) {
-        position = p;
-        velocity = v;
-        color = Color.blue;
-    }
-
-    public Boid(DoublePoint p, DoublePoint v, Color c) {
+    public Boid(DoublePoint p, DoublePoint v, Color c, BoidSettings s) {
         position = p;
         velocity = v;
         color = c;
+        settings = s;
     }
-
-    public DoublePoint interactWithOtherBoidsChangeNeeded(Grid grid){
-        DoublePoint desiredVelocityChange = new DoublePoint();
-        // stats to be updated
-        DoublePoint avgPos = new DoublePoint();
-        DoublePoint avgVelocity = new DoublePoint();
-        int boidsInViewRangeAndFriendly = 0;
-
-        // update stats
-        List<Boid> localBoids = grid.getNeighbors(this, BoidSettings.VIEW_RANGE);
-
-        for (Boid checkBoid : localBoids) {
-            if (checkBoid == this) {continue;} // ignore if checking self
-
-            boolean difColor = !this.color.equals(checkBoid.color);
-            double xDif = (position.x - checkBoid.position.x);
-            double yDif = (position.y - checkBoid.position.y);
-            double distance = Math.sqrt((xDif * xDif) + ((yDif * yDif)));
-            double relativeSpeed = this.velocity.distance(checkBoid.velocity);
-
-            if (difColor && relativeSpeed > BoidSettings.BATTLE_SPEED_MIN && distance < BoidSettings.BATTLE_RANGE) {
-                checkBoid.markedForRemoval = true;
-                this.markedForRemoval = true;
-                return desiredVelocityChange;
-            }
-            if (distance <= BoidSettings.SEPARATION_RANGE) {
-                // Separation
-                desiredVelocityChange.translate((xDif * BoidSettings.SEPARATION_FORCE), (yDif * BoidSettings.SEPARATION_FORCE));
-            } else if (distance <= BoidSettings.VIEW_RANGE) {
-                if (difColor) {
-                    // Color Separation
-                    desiredVelocityChange.translate((xDif * BoidSettings.DIF_COLOR_SEP_FORCE), (yDif * BoidSettings.DIF_COLOR_SEP_FORCE));
-                } else {
-                    // cohesion and alignment helper
-                    boidsInViewRangeAndFriendly++;
-                    avgPos.translate(checkBoid.position.x, checkBoid.position.y);
-                    avgVelocity.translate(checkBoid.velocity.x, checkBoid.velocity.y);
-                }
-            }
-        }
-
-        if (boidsInViewRangeAndFriendly != 0) {
-            avgVelocity.x /= boidsInViewRangeAndFriendly;
-            avgVelocity.y /= boidsInViewRangeAndFriendly;
-            avgPos.x /= boidsInViewRangeAndFriendly;
-            avgPos.y /= boidsInViewRangeAndFriendly;
-
-            //cohesion
-            if (position.distance(avgPos) > BoidSettings.COHESION_RANGE) {
-                desiredVelocityChange.x += ((-position.x + avgPos.x) * BoidSettings.COHESION_FORCE);
-                desiredVelocityChange.y += ((-position.y + avgPos.y) * BoidSettings.COHESION_FORCE);
-            }
-
-            //alignment
-            desiredVelocityChange.x += ((-velocity.x + avgVelocity.x) * BoidSettings.ALIGNMENT_FORCE);
-            desiredVelocityChange.y += ((-velocity.y + avgVelocity.y) * BoidSettings.ALIGNMENT_FORCE);
-        }
-        return desiredVelocityChange;
-    }
-
     public void updateVelocity(Grid grid) {
         DoublePoint desiredVelocityChange = new DoublePoint();
 
@@ -117,7 +48,65 @@ public class Boid {
             velocity.y *= scale;
         }
     }
+    public DoublePoint interactWithOtherBoidsChangeNeeded(Grid grid){ // REWORK THIS OH MY GOD THIS IS SO BAD HOLY SHITGRAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+        DoublePoint desiredVelocityChange = new DoublePoint();
+        // stats to be updated
+        DoublePoint avgPos = new DoublePoint();
+        DoublePoint avgVelocity = new DoublePoint();
+        int boidsInViewRangeAndFriendly = 0;
 
+        List<Boid> localBoids = grid.getNeighbors(this, BoidSettings.VIEW_RANGE);
+
+        // update stats
+        for (Boid checkBoid : localBoids) {
+
+            boolean difColor = !this.color.equals(checkBoid.color);
+            double xDif = (position.x - checkBoid.position.x);
+            double yDif = (position.y - checkBoid.position.y);
+            double distance = Math.sqrt((xDif * xDif) + ((yDif * yDif)));
+            double relativeSpeed = this.velocity.distance(checkBoid.velocity);
+
+            if (difColor && relativeSpeed > BoidSettings.BATTLE_SPEED_MIN && distance < BoidSettings.BATTLE_RANGE) {
+                checkBoid.markedForRemoval = true;
+                this.markedForRemoval = true;
+                return desiredVelocityChange;
+            }
+
+            if (distance <= BoidSettings.SEPARATION_RANGE) {
+                // Separation
+                desiredVelocityChange.translate((xDif * BoidSettings.SEPARATION_FORCE), (yDif * BoidSettings.SEPARATION_FORCE));
+            } else if (distance <= BoidSettings.VIEW_RANGE) {
+                if (difColor) {
+                    // Color Separation
+                    desiredVelocityChange.translate((xDif * BoidSettings.DIF_COLOR_SEP_FORCE), (yDif * BoidSettings.DIF_COLOR_SEP_FORCE));
+                } else {
+                    // cohesion and alignment helper
+                    boidsInViewRangeAndFriendly++;
+                    avgPos.translate(checkBoid.position.x, checkBoid.position.y);
+                    avgVelocity.translate(checkBoid.velocity.x, checkBoid.velocity.y);
+                }
+            }
+
+        }
+
+        if (boidsInViewRangeAndFriendly != 0) {
+            avgVelocity.x /= boidsInViewRangeAndFriendly;
+            avgVelocity.y /= boidsInViewRangeAndFriendly;
+            avgPos.x /= boidsInViewRangeAndFriendly;
+            avgPos.y /= boidsInViewRangeAndFriendly;
+
+            //cohesion
+            if (position.distance(avgPos) > BoidSettings.COHESION_RANGE) {
+                desiredVelocityChange.x += ((-position.x + avgPos.x) * BoidSettings.COHESION_FORCE);
+                desiredVelocityChange.y += ((-position.y + avgPos.y) * BoidSettings.COHESION_FORCE);
+            }
+
+            //alignment
+            desiredVelocityChange.x += ((-velocity.x + avgVelocity.x) * BoidSettings.ALIGNMENT_FORCE);
+            desiredVelocityChange.y += ((-velocity.y + avgVelocity.y) * BoidSettings.ALIGNMENT_FORCE);
+        }
+        return desiredVelocityChange;
+    }
     public DoublePoint targetChangeNeeded() {
         DoublePoint desiredVelocityChange = new DoublePoint();
         if (target != null && position.distance(target) < BoidSettings.TARGET_MAX_RANGE && position.distance(target) > BoidSettings.TARGET_MIN_RANGE) { // check if close enough to target to move towards
@@ -131,16 +120,16 @@ public class Boid {
     public DoublePoint AvoidWallChangeNeeded() {
         DoublePoint desiredVelocityChange = new DoublePoint();
         if (position.x < BoidSettings.BORDER_MARGIN) {
-            velocity.x += BoidSettings.TURN_FACTOR;
+            desiredVelocityChange.x += BoidSettings.TURN_FACTOR;
         }
         if (position.y < BoidSettings.BORDER_MARGIN) {
-            velocity.y += BoidSettings.TURN_FACTOR;
+            desiredVelocityChange.y += BoidSettings.TURN_FACTOR;
         }
-        if (position.x > (BoidFrame.singleton.getWidth()) - BoidSettings.BORDER_MARGIN) {
-            velocity.x -= BoidSettings.TURN_FACTOR;
+        if (position.x > (BoidSettings.boundWidth) - BoidSettings.BORDER_MARGIN) {
+            desiredVelocityChange.x -= BoidSettings.TURN_FACTOR;
         }
-        if (position.y > (BoidFrame.singleton.getHeight()) - BoidSettings.BORDER_MARGIN) {
-            velocity.y -= BoidSettings.TURN_FACTOR;
+        if (position.y > (BoidSettings.boundHeight) - BoidSettings.BORDER_MARGIN) {
+            desiredVelocityChange.y -= BoidSettings.TURN_FACTOR;
         }
         return desiredVelocityChange;
     }

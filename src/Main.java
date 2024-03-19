@@ -1,12 +1,9 @@
-
 import java.awt.*;
-import java.util.Random;
-
 
 public class Main {
     private static final int WIDTH = 1024;
     private static final int HEIGHT = 1024;
-    private static final int BOID_COUNT = 5000;
+    private static final int BOID_COUNT = 25;
 
 
     public static void main(String[] args) {
@@ -19,17 +16,3 @@ public class Main {
         });
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
